@@ -20,14 +20,16 @@ public class Main {
         System.out.println("Choose Head(0) or Tails(1) : ");
         int toss = scanner.nextInt();
         int coin = flipAcoin();
-        if(coin==0)
+        if(coin == 0)
             System.out.println("It's a Head");
         else
             System.out.println("It's a Tail");
         printInitialBoard();
         GameManager gameManager = gameManager = new GameManager(computer,player);
-        if(coin != toss)
+        if(coin != toss){
             gameManager.computerTurn();
+            gameManager.toggleFirstTurn();
+        }
 
         while (gameManager.isGameFinished()==0 && gameManager.gameCurrentState.getNumberOfCellsOccupied()!=9){
             gameManager.printBoard();

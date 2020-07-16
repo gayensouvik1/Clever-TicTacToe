@@ -9,17 +9,20 @@ public class GameManager {
     int[] board;
     Player player1,player2;
     int numberOfCellsOccupied;
+    int firstTurn;
 
     public GameManager(Player player1, Player player2){
         gameCurrentState = new GameState();
         this.player1 = player1;
         this.player2 = player2;
         numberOfCellsOccupied = 0;
+        //assuming by default human plays the first turn. If not, the caller can toggle it.
+        firstTurn = -1;
     }
 
-    /*if game is on the return value is 0,
-    * if human wins return value is -1,
-    * if comp wins return value is 1
+    /*if game is not finished the return value is 0,
+    * if human wins return value is -ve value,
+    * if comp wins return value is +ve value,
     * */
     public int isGameFinished(){
         board = gameCurrentState.getBoard();
@@ -33,6 +36,8 @@ public class GameManager {
             return board[start];
         return 0;
     }
+
+
 
     public void playTurn(int input) {
         board = gameCurrentState.getBoard();
@@ -59,12 +64,17 @@ public class GameManager {
         }
     }
 
+    /* Function for playing human's turn.
+     */
+
     public void humanTurn(int input){
         board = gameCurrentState.getBoard();
         board[input] = -1;
         gameCurrentState.increamentNumberOfCellOccupied();
     }
 
+    /* Function for playing computer's turn.
+     */
     public void computerTurn(){
         board = gameCurrentState.getBoard();
         int bestSpot = calculateBestMove();
@@ -72,6 +82,13 @@ public class GameManager {
         gameCurrentState.increamentNumberOfCellOccupied();
     }
 
+
+    /* Calculates the best possible move depending on the current state.
+    This is computed in each and every computer turn.
+
+    PS: One alternative way is to precompute best move and store them against each state in a database/map.
+    Drawback for this approach is, it will take a huge space if game board size increases.
+     */
     private int calculateBestMove() {
 
         int bestScore = -10000000;
@@ -79,9 +96,8 @@ public class GameManager {
         for(int i=1;i<=9;i++){
             if(board[i]==0){
                 board[i] = 1;
-                int score = findNextBestMove(false);
+                int score = minmax(false);
                 board[i] = 0;
-//                System.out.println(i+" = "+score);
                 if(score > bestScore){
                     bestScore = score;
                     index = i;
@@ -91,7 +107,7 @@ public class GameManager {
         return index;
     }
 
-    private int findNextBestMove(boolean isMaximizersTurn) {
+    private int minmax(boolean isMaximizersTurn) {
 
         if(isGameFinished()>0)
             return 1;
@@ -113,7 +129,7 @@ public class GameManager {
 
                 if(board[i]==0){
                     board[i] = -1;
-                    score = Math.min(score, findNextBestMove(true));
+                    score = Math.min(score, minmax(true));
                     board[i] = 0;
                 }
             }
@@ -124,7 +140,7 @@ public class GameManager {
 
                 if(board[i]==0){
                     board[i] = 1;
-                    score = Math.max(score, findNextBestMove(false));
+                    score = Math.max(score, minmax(false));
                     board[i] = 0;
                 }
             }
@@ -134,14 +150,18 @@ public class GameManager {
 
     public void printBoard(){
         for(int i=1;i<=9;i++){
-            if(board[i]==1)
+            if(board[i]==firstTurn)
                 System.out.print("x ");
-            else if(board[i]==-1)
+            else if(board[i]==-1*firstTurn)
                 System.out.print("o ");
             else
                 System.out.print("_ ");
             if(i%3==0)
                 System.out.println();
         }
+    }
+
+    public void toggleFirstTurn(){
+        firstTurn = 1;
     }
 }
